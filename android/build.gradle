@@ -1,0 +1,65 @@
+group 'com.example.flutter_union_pay'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    ext.kotlin_version = '1.7.10'
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url = uri("https://plugins.gradle.org/m2/")
+        }
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.3.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+    if (project.android.hasProperty("namespace")) {
+        namespace 'com.example.flutter_union_pay'
+    }
+    compileSdk 33
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
+//    buildTypes {
+//        release {
+//            minifyEnabled false
+//            useProguard false
+//        }
+//        debug {
+//            minifyEnabled false
+//            useProguard false
+//        }
+//    }
+
+    defaultConfig {
+        minSdkVersion 19
+    }
+//    lintOptions {
+//        disable 'InvalidPackage'
+//    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
+}
