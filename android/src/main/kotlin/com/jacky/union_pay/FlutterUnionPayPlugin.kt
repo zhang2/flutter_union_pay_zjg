@@ -62,11 +62,23 @@ class FlutterUnionPayPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, Pl
         Log.e("union app", "installed is $installed")
         result.success(installed)
       }
+      "getBrand" -> {
+        val brand = getSETypeForBrand()
+        Log.i("返回手机品牌 Phone Brand", brand)
+        result.success(brand) // 返回手机品牌
+      }
       "pay" -> {
         val tn = call.argument<String>("tn")
         val env = call.argument<String>("env")
-        Log.e("tn+env", "$tn<<>>$env")
+        Log.e("tn+env+seType", "$tn<<>>$env")
         val ret = UPPayAssistEx.startPay(activity, null, null, tn, env)
+      }
+      "sePay" -> {
+        val tn = call.argument<String>("tn")
+        val env = call.argument<String>("env")
+        val seType = getSETypeForBrand()
+        Log.e("tn+env+seType", "$tn<<>>$env<<>>$seType")
+        val ret = UPPayAssistEx.startSEPay(activity, null, null, tn, env, seType)
         Log.e("ret", ret.toString())
       }
       else -> {
@@ -111,5 +123,27 @@ class FlutterUnionPayPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, Pl
     Log.i("payload",payload.toString())
     messageChannel?.send(JSONObject(payload).toString())
     return true
+  }
+
+  fun getSETypeForBrand(): String {
+    val brand = android.os.Build.BRAND.lowercase() // 获取手机品牌并转为小写
+    Log.i("手机品牌brand",brand)
+    val seTypeMap = mapOf(
+      "samsung" to "02", // 三星
+      "huawei" to "04",  // 华为
+      "honor" to "04",   // 荣耀
+      "meizu" to "27",   // 魅族
+      "leeco" to "30",   // 乐视
+      "xiaomi" to "25",  // 小米
+      "redmi" to "25",   // 红米与小米相同
+      "oppo" to "29",    // OPPO
+      "vivo" to "33",    // vivo
+      "smartisan" to "32", // 锤子
+      "realme" to "35",
+      "oneplus" to "36"
+    )
+
+    // 根据品牌获取对应 seType 值，默认返回一个未定义值，例如 "00"
+    return seTypeMap[brand] ?: "00"
   }
 }

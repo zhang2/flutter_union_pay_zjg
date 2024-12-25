@@ -29,6 +29,7 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   String _platformVersion = 'Unknown';
+  String _brandCode = '00';
 
   @override
   void initState() {
@@ -39,10 +40,12 @@ class HomePageState extends State<HomePage> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     String platformVersion;
+    String code = '00';
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
     try {
       platformVersion = await UnionPay.uPayVersion();
+      code = await UnionPay.seBrandCode();
       print("platformVersion===$platformVersion");
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
@@ -55,6 +58,7 @@ class HomePageState extends State<HomePage> {
 
     setState(() {
       _platformVersion = platformVersion;
+      _brandCode = code;
     });
 
     UnionPay.payListener((result) {
@@ -99,7 +103,20 @@ class HomePageState extends State<HomePage> {
                       print("##########$value");
                     });
                   },
-                  child: Text('调起支付'))
+                  child: Text('调起支付')),
+              TextButton(onPressed: () async {}, child: Text('获取手机品牌')),
+              Text(_brandCode),
+              TextButton(
+                  onPressed: () {
+                    UnionPay.sePay(
+                      mode: PaymentEnv.DEVELOPMENT,
+                      tn: "669802785406247611910",
+                      scheme: "UnionPayTest",
+                    ).then((value) {
+                      print("##########$value");
+                    });
+                  },
+                  child: Text('调起品牌支付')),
             ],
           )),
     );

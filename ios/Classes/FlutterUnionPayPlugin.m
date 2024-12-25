@@ -11,6 +11,14 @@
 
 //#import "UPPaymenControlMini.h"
 #import <UPPaymentControlMini/UPPaymenControlMini.h>
+#import <UPApplePayLib/UPApplePayLib.h>
+#import <PassKit/PassKit.h>
+
+#define UPApplePayMerchantID   @"merchant.com.bdegocopy.newapp"
+
+@interface FlutterUnionPayPlugin ()<UPAPayPluginDelegate>
+
+@end
 
 @implementation FlutterUnionPayPlugin
 - (instancetype)initWithViewController:(UIViewController *)viewController{
@@ -49,6 +57,21 @@
       Boolean ret = [[UPPaymentControl defaultControl] startPay:tn fromScheme:scheme mode:mode viewController:self.viewController];
       result([NSNumber numberWithBool:ret]);
 
+  }else if([@"sePay" isEqualToString:call.method]){
+      NSString *tn = call.arguments[@"tn"];
+      NSString *mode = call.arguments[@"env"];
+      //NSString *scheme = call.arguments[@"scheme"];
+      
+      Boolean ret = [UPAPayPlugin startPay:tn mode:mode viewController:self.viewController delegate:self andAPMechantID:UPApplePayMerchantID];
+      result([NSNumber numberWithBool:ret]);
+
+  }else if ([@"getBrand" isEqualToString:call.method]) {
+      BOOL isSupportApplePay = NO;
+      
+      isSupportApplePay = [PKPaymentAuthorizationController canMakePayments] && [PKPaymentAuthorizationViewController canMakePaymentsUsingNetworks:@[PKPaymentNetworkChinaUnionPay]];
+      NSLog(@"isSupportApplePay %d", isSupportApplePay);
+      NSString *brand = isSupportApplePay ? @"-2000" : @"00"; // 定义成-2000，表示是iOS可用苹果pay
+      result(brand);
   }else {
     result(FlutterMethodNotImplemented);
   }
@@ -88,5 +111,30 @@
     NSLog(@"string :: %@",str);
     return NO;
 }
+
+
+#pragma mark - UPAPayPluginDelegate
+
+-(void)UPAPayPluginResult:(UPPayResult *) payResult {
+    NSMutableDictionary *payload = [[NSMutableDictionary alloc] init];
+    if (payResult.paymentResultStatus == UPPaymentResultStatusSuccess) {
+        [payload setValue:[NSNumber numberWithInt:1] forKey:@"code"];
+    } else if(payResult.paymentResultStatus == UPPaymentResultStatusFailure) {
+        [payload setValue:[NSNumber numberWithInt:2] forKey:@"code"];
+    } else if(payResult.paymentResultStatus == UPPaymentResultStatusCancel) {
+        [payload setValue:[NSNumber numberWithInt:0] forKey:@"code"];
+    } else if(payResult.paymentResultStatus == UPPaymentResultStatusUnknownCancel) {
+        [payload setValue:[NSNumber numberWithInt:0] forKey:@"code"];
+    }
+    
+    NSData *payloadData = [NSJSONSerialization dataWithJSONObject:payload
+                                                          options:0
+                                                            error:nil];
+    NSString *payloadMsg = [[NSString alloc] initWithData:payloadData encoding:NSUTF8StringEncoding];
+    [messageChannel sendMessage:payloadMsg reply:^(id  _Nullable reply) {
+        NSLog(@"%@", reply);
+    }];
+}
+
 
 @end

@@ -1,0 +1,6 @@
+framework module UPApplePayLib {
+  umbrella header "UPApplePayLib.h"
+  export *
+
+  module * { export * }
+}

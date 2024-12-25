@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_union_pay/enum/union_pay_enum.dart';
@@ -8,9 +7,7 @@ class UnionPay {
   static const _PACKAGE_NAME = 'flutter_union_pay';
   static const _MESSAGE_CHANNEL_NAME = 'flutter_union_pay.message';
 
-  static const MethodChannel _channel =
-      const MethodChannel(_PACKAGE_NAME);
-
+  static const MethodChannel _channel = const MethodChannel(_PACKAGE_NAME);
 
   ///## 获取云闪付控件版本号
   static Future<String> uPayVersion() async {
@@ -26,10 +23,21 @@ class UnionPay {
     });
   }
 
-
-  static Future<bool> pay(
-      {required String tn,required PaymentEnv mode, required String scheme}) async {
+  static Future<bool> pay({required String tn, required PaymentEnv mode, required String scheme}) async {
     return await _channel.invokeMethod('pay', {
+      'tn': tn,
+      'env': _getEnvString(mode),
+      'scheme': scheme,
+    });
+  }
+
+  static Future<String> seBrandCode() async {
+    final String brandCode = await _channel.invokeMethod('getBrand');
+    return brandCode;
+  }
+
+  static Future<bool> sePay({required String tn, required PaymentEnv mode, required String scheme}) async {
+    return await _channel.invokeMethod('sePay', {
       'tn': tn,
       'env': _getEnvString(mode),
       'scheme': scheme,
@@ -46,10 +54,10 @@ class UnionPay {
   }
 
   /// ## 监听支付结果
-  static payListener(Function(PaymentResult result) onListener) async{
+  static payListener(Function(PaymentResult result) onListener) async {
     var channel = BasicMessageChannel(_MESSAGE_CHANNEL_NAME, StringCodec());
-    channel.setMessageHandler((message)  async{
-       return await onListener(PaymentResult.fromJson(message!)) ?? '';
-     });
+    channel.setMessageHandler((message) async {
+      return await onListener(PaymentResult.fromJson(message!)) ?? '';
+    });
   }
 }
