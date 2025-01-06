@@ -70,7 +70,7 @@
       
       isSupportApplePay = [PKPaymentAuthorizationController canMakePayments] && [PKPaymentAuthorizationViewController canMakePaymentsUsingNetworks:@[PKPaymentNetworkChinaUnionPay]];
       NSLog(@"isSupportApplePay %d", isSupportApplePay);
-      NSString *brand = isSupportApplePay ? @"-2000" : @"00"; // 定义成-2000，表示是iOS可用苹果pay
+      NSString *brand = isSupportApplePay ? @"-2000" : @"00"; // 定义成-2000，表示是iOS可用苹果pay // 注释
       result(brand);
   }else {
     result(FlutterMethodNotImplemented);
